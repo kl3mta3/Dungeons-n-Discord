@@ -622,13 +622,13 @@ namespace DnDBot.Character.Commands
         public static async Task DisplayCharacter(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder());
-            Player player = Player.GetPlayerFromDataBase(ctx.Member.Id);
+            Player player = Player.GetPlayerFromDataBase(ctx.User.Id);
             ctx.Client.Logger.LogInformation($"Player {player.name} found.");
             var characterInfoEmbed = new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Magenta,
                 Title = $"             Dungeons n Disc",
-                Description = $"      Character Info for {ctx.Member.Username}",
+                Description = $"      Character Info for {ctx.User.Username}",
         };
                characterInfoEmbed.WithThumbnail(ctx.Client.CurrentUser.AvatarUrl);
 

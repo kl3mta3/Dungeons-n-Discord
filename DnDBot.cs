@@ -16,7 +16,7 @@ using DisCatSharp.Interactivity;
 using DisCatSharp.Interactivity.Extensions;
 
 using DnDBot.Character.Commands;
-
+using Newtonsoft.Json;
 using DnDBot.WorldSystem;
 using DnDBot.Character;
 using System.Numerics;
@@ -26,7 +26,7 @@ using MySql.Data.MySqlClient;
 using Newtonsoft.Json.Linq;
 using MySqlX.XDevAPI;
 using System.Data;
-
+using DnDBot.System;
 namespace DnDBot
 {
     public class DnDBot
@@ -36,12 +36,17 @@ namespace DnDBot
         private string messageLogName = "dndbot-message-log";
         private string commandLogName = "dndbot-command-log";
         private string deleteLogName = "dndbot-deleted-log";
-        private ulong godUserId = 179578819672408064;
-        private ulong homeServerId = 1030596321087864902;
-        internal static string connStr = "server=192.168.1.232;port=3306;user=Kenny;password=Futurama1030!;database=dnddatabase;";
-        internal static  string tolken = "MTA2ODYwNzE2OTU1OTI2NTM4MQ.GPKl1J.QhATUjPO-zgLsdsV1x7iVfSdd2ylxexk17Ee0c";
 
+        public static Config Config { get; internal set; }
+        //start nerw connection data
 
+        public static DiscordClient DiscordClient { get; internal set; }
+       // internal static string connStr = $"server={Config.DatabaseConfig.hostname};userid={Config.DatabaseConfig.user};password={Config.DatabaseConfig.password};database={Config.DatabaseConfig.dbName}";
+        internal static string connStr = "server="+Config.DatabaseConfig.hostname+";userid="+Config.DatabaseConfig.user+";password="+Config.DatabaseConfig.password+";database="+Config.DatabaseConfig.dbName;
+        internal static  string tolken = @$"{Config.DiscordConfig.BotToken}";
+       
+      
+        //end new connection data
         public static DiscordGuild? homeServer;
         public static DiscordChannel? messagesDeleted;
         public static DiscordChannel? messageLogChannel;
@@ -60,10 +65,10 @@ namespace DnDBot
         public async Task MainAsync()
         {
             Console.WriteLine("Starting bot...");
-
+            Config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(@"config.json"));
             List<string> prefixes = new List<string>();
 
-            prefixes.Add("/");
+            prefixes.Add(@$"{Config.DiscordConfig.Prefix}");
 
             var services = new ServiceCollection()
                 .AddSingleton<Random>()
@@ -74,15 +79,35 @@ namespace DnDBot
                  .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
                  .CreateLogger();
 
-
-            discord = new DiscordClient(new DiscordConfiguration
+           
+            DiscordConfiguration discCofig = new DiscordConfiguration()
             {
                 Token = tolken,
                 TokenType = TokenType.Bot,
                 Intents = DiscordIntents.AllUnprivileged | DiscordIntents.All,
-                //MinimumLogLevel = LogLevel.Debug,
+                MinimumLogLevel = LogLevel.Information,
+            };
 
-            });
+            discord = new DiscordClient(discCofig);
+
+            ///test connector with hidden token
+            //discord = new DiscordClient(new DiscordConfiguration
+            //{
+            //    Token = Config.DiscordConfig.BotToken,
+            //    TokenType = TokenType.Bot,
+            //    AutoReconnect = true,
+            //    MessageCacheSize = 2048,
+            //    MinimumLogLevel = LogLevel.Information,
+            //    Intents = DiscordIntents.AllUnprivileged | DiscordIntents.All,
+            //    UseCanary = true,
+            //    ReconnectIndefinitely = true,
+
+
+            //});
+
+
+
+            ///end test connector
 
             discord.UseInteractivity(new InteractivityConfiguration
             {
@@ -129,8 +154,8 @@ namespace DnDBot
             
             
             ///System Home Server Info Start///
-            homeServer = discord.GetGuildAsync(homeServerId).Result;
-            god = discord.GetUserAsync(godUserId).Result;
+            homeServer = discord.GetGuildAsync(Config.SystemCommandConfig.systemGuildID).Result;
+            god = discord.GetUserAsync(Config.SystemCommandConfig.godUserID).Result;
             
             foreach (var item in homeServer.Channels)
             {
