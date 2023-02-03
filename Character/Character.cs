@@ -18,6 +18,7 @@ using Org.BouncyCastle.Utilities.Collections;
 using DisCatSharp.CommandsNext;
 using Microsoft.VisualBasic;
 using System.Linq.Expressions;
+using System.Reflection.PortableExecutable;
 
 namespace DnDBot.Character
 {
@@ -60,7 +61,7 @@ namespace DnDBot.Character
         internal DiscordMember discordMember;
 
         internal WorldGrid grid = new WorldGrid();
-        internal Vector2 worldPosition;
+        internal Vector2 currentPosition;
         internal string name = "";
         internal int cash;
         internal int xP;
@@ -70,7 +71,8 @@ namespace DnDBot.Character
         internal ulong playerID;
         internal int xPToNextLevel;
         internal int maxLevel;
-
+        internal int deaths;
+        internal Vector2 deathPosition;
         //Base Stats
 
 
@@ -82,10 +84,13 @@ namespace DnDBot.Character
         internal int baseIntellect = 1;
         internal int baseAgility = 1;
 
+        internal int baseHerbalism = 1;
+        internal int baseMining = 1;
         internal int gridsDiscovered = 0;
 
-        internal int inventorySize = 8;
-        
+        internal int inventorySize = 0;
+        internal int inventoryMax = 8;
+
         //additem array for inventory when item class is made
 
         public async Task MovePlayerTo(ulong player, Vector2 position)
@@ -94,8 +99,8 @@ namespace DnDBot.Character
             await p.UpdatePlayerStatInDataBase(player, "worldPositionX", (int)position.X);
             await p.UpdatePlayerStatInDataBase(player, "worldPositionY", (int)position.Y);
             
-            Log.Logger.Information($"{p.name} moved to {p.worldPosition.X},{p.worldPosition.X}d");
-            await discordMember.SendMessageAsync($"You have moved to {p.worldPosition.X},{p.worldPosition.X}");
+            Log.Logger.Information($"{p.name} moved to {p.currentPosition.X},{p.currentPosition.X}d");
+            await discordMember.SendMessageAsync($"You have moved to {p.currentPosition.X},{p.currentPosition.X}");
         }
         
         public void InsertPlayerIntoDataBase(MySqlConnection connection)
@@ -107,14 +112,14 @@ namespace DnDBot.Character
                 connection.Open();
             }
             //connection.ChangeDatabase("dnddatabase");
-            MySqlCommand command = new MySqlCommand("INSERT INTO players (name, playerId, xP, cash, playerLevel, worldPositionX, worldPositionY, homeGuildId, homeGuildName, baseStamina , baseHealth ,baseEnergy , baseArmor, baseStrength, baseIntellect , baseAgility, playerType, isBanned, gridsDiscovered, xPToNextLevel, maxLevel) VALUES (@name, @playerId, @xP, @cash, @playerLevel, @worldPositionX, @worldPositionY, @homeGuildId, @homeGuildName, @baseStamina , @baseHealth , @baseEnergy , @baseArmor, @baseStrength, @baseIntellect ,@baseAgility, @playerType, @isBanned, @gridsDiscovered, @xPToNextLevel, @maxLevel)", connection);
+            MySqlCommand command = new MySqlCommand("INSERT INTO players (name, playerId, xP, cash, playerLevel, worldPositionX, worldPositionY, homeGuildId, homeGuildName, baseStamina , baseHealth ,baseEnergy , baseArmor, baseStrength, baseIntellect , baseAgility, playerType, isBanned, gridsDiscovered, xPToNextLevel, maxLevel, deaths, deathPositionX, deathPositionY, baseHerbalism, baseMining, inventorySize, InventoryMax) VALUES (@name, @playerId, @xP, @cash, @playerLevel, @worldPositionX, @worldPositionY, @homeGuildId, @homeGuildName, @baseStamina , @baseHealth , @baseEnergy , @baseArmor, @baseStrength, @baseIntellect ,@baseAgility, @playerType, @isBanned, @gridsDiscovered, @xPToNextLevel, @maxLevel, @deaths, @deathPositionX, @deathPositionY, @baseHerbalism, @baseMining, @inventorySize, @InventoryMax)", connection);
             command.Parameters.AddWithValue("@name", name);
             command.Parameters.AddWithValue("@playerId", playerID);
             command.Parameters.AddWithValue("@xP", xP);
             command.Parameters.AddWithValue("@cash", cash);
             command.Parameters.AddWithValue("@playerLevel", playerLevel);
-            command.Parameters.AddWithValue("@worldPositionX", worldPosition.X);
-            command.Parameters.AddWithValue("@worldPositionY", worldPosition.Y);
+            command.Parameters.AddWithValue("@worldPositionX", currentPosition.X);
+            command.Parameters.AddWithValue("@worldPositionY", currentPosition.Y);
             command.Parameters.AddWithValue("@homeGuildId", homeGuildID);
             command.Parameters.AddWithValue("@homeGuildName", homeGuildName);
             command.Parameters.AddWithValue("@baseStamina", baseStamina);
@@ -129,6 +134,15 @@ namespace DnDBot.Character
             command.Parameters.AddWithValue("@gridsDiscovered", gridsDiscovered);
             command.Parameters.AddWithValue("@xPToNextLevel", xPToNextLevel);
             command.Parameters.AddWithValue("@maxLevel", maxLevel);
+            command.Parameters.AddWithValue("@deaths", deaths);
+            command.Parameters.AddWithValue("@deathPosition.X", deathPosition.X);
+            command.Parameters.AddWithValue("@deathPosition.Y", deathPosition.Y);
+            command.Parameters.AddWithValue("@baseHerbalism", baseHerbalism);
+            command.Parameters.AddWithValue("baseMining", baseMining);
+            command.Parameters.AddWithValue("@inventorySize", inventorySize);
+            command.Parameters.AddWithValue("@InventoryMax", inventoryMax);
+
+
             command.ExecuteNonQuery();
             connection.Close();////
 
@@ -166,8 +180,8 @@ namespace DnDBot.Character
                 player.xP = reader.GetInt32("xP");
                 player.cash = reader.GetInt32("cash");
                 player.playerLevel = reader.GetInt32("playerLevel");
-                player.worldPosition.X = reader.GetInt32("worldPosition.X");
-                player.worldPosition.Y = reader.GetInt32("worldPosition.Y");
+                player.currentPosition.X = reader.GetInt32("worldPosition.X");
+                player.currentPosition.Y = reader.GetInt32("worldPosition.Y");
                 player.homeGuildID = (ulong)reader.GetInt32("homeGuildID");
 
                 player.homeGuildName = reader.GetString("homeGuildName");
@@ -181,6 +195,15 @@ namespace DnDBot.Character
                 player.gridsDiscovered = reader.GetInt32("gridsDiscovered");
                 player.xPToNextLevel = reader.GetInt32("xPToNextLevel");
                 player.maxLevel = reader.GetInt32("maxLevel");
+                player.isBanned = reader.GetBoolean("isBanned");
+                player.playerType = (PlayerType)reader.GetInt32("playerType");
+                player.deaths = reader.GetInt32("deaths");
+                player.deathPosition.X = reader.GetInt32("deathPosition.X");
+                player.deathPosition.Y = reader.GetInt32("deathPosition.Y");
+                player.baseHerbalism= reader.GetInt32("baseHerbalism");
+                player.baseMining= reader.GetInt32("baseMining");
+                player.inventorySize = reader.GetInt32("inventorySize");
+                player.inventoryMax = reader.GetInt32("inventoryMax");
                 player.discordMember = GetDiscordMember(player.homeGuildID, player.playerID);
 
                 if (reader.GetInt32("playerType") == 0)
@@ -277,7 +300,7 @@ namespace DnDBot.Character
                 {
                     player.isBanned = reader.GetBoolean("isBanned");
                     player.playerType = (PlayerType)reader.GetInt32("playerType");
-                    player.worldPosition = new Vector2(reader.GetFloat("worldPositionX"), reader.GetFloat("worldPositionY"));
+                    player.currentPosition = new Vector2(reader.GetFloat("worldPositionX"), reader.GetFloat("worldPositionY"));
                     player.name = reader.GetString("name");
                     player.cash = reader.GetInt32("cash");
                     player.xP = reader.GetInt32("xP");
@@ -295,7 +318,14 @@ namespace DnDBot.Character
                     player.gridsDiscovered = reader.GetInt32("gridsDiscovered");
                     player.xPToNextLevel = reader.GetInt32("xPToNextLevel");
                     player.maxLevel = reader.GetInt32("maxLevel");
-                    player.discordMember = GetDiscordMember(player.homeGuildID, player.playerID);
+                    player.deaths = reader.GetInt32("deaths");
+                    player.deathPosition.X = reader.GetInt32("deathPosition.X");
+                    player.deathPosition.Y = reader.GetInt32("deathPosition.Y");
+                    player.baseHerbalism = reader.GetInt32("baseHerbalism");
+                    player.baseMining = reader.GetInt32("baseMining");
+                player.inventorySize = reader.GetInt32("inventorySize");
+                player.inventoryMax = reader.GetInt32("inventoryMax");
+                player.discordMember = GetDiscordMember(player.homeGuildID, player.playerID);
                 }
             connection.Close();
             return player;
@@ -360,38 +390,35 @@ namespace DnDBot.Character
                 case "baseHealth":
                     stat = baseHealth+= newValue;
                     break;
-
                 case "baseEnergy":
                     stat = baseEnergy += newValue;
                     break;
-
                 case "baseStamina":
                     stat = baseStamina += newValue;
                     break;
-
                 case "baseArmor":
                     stat = baseArmor += newValue;
                     break;
-
                 case "baseStrength":
                     stat = baseStrength += newValue;
                     break;
-
                 case "baseIntenllect":
                     stat = baseIntellect += newValue;
                     break;
-
                 case "baseAgility":
                     stat = baseAgility += newValue;
                     break;
-
                 case "worldPositionX":
-
-                    stat = (int)(worldPosition.X += newValue);
+                    stat = (int)(currentPosition.X += newValue);
                     break;
                 case "worldPositionY":
-
-                    stat = (int)(worldPosition.Y += newValue);
+                    stat = (int)(currentPosition.Y += newValue);
+                    break;
+                case "deathPositionX":
+                    stat = (int)(deathPosition.X = newValue);
+                    break;
+                case "deathPositionY":
+                    stat = (int)(deathPosition.Y = newValue);
                     break;
                 case "cash":
                     stat = cash += newValue;
@@ -408,6 +435,23 @@ namespace DnDBot.Character
                 case "xPToNextLevel":
                     stat = xPToNextLevel += newValue;
                     break;
+                case "deaths":
+                    stat = deaths += newValue;
+                    break;
+                case "baseHerbalism":
+                    stat = baseHerbalism += newValue;
+                    break;
+                case "baseMining":
+                    stat = baseMining += newValue;
+                    break;
+                case "inventorySize":
+                    stat = inventorySize += newValue;
+                    break;
+                case "inventoryMax":
+                    stat = inventoryMax += newValue;
+                    break;
+                    
+                    
             }
 
             return stat;

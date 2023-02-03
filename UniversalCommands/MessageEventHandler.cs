@@ -10,70 +10,70 @@ namespace DnDBot.Character.Commands
     {
 
 
-        [Event]
-        public Task MessageCreated(DiscordClient s, MessageCreateEventArgs e)
-        {
+        //[Event]
+        //public Task MessageCreated(DiscordClient s, MessageCreateEventArgs e)
+        //{
 
-            var message = e.Message;
+        //    var message = e.Message;
 
-            bool serverExists = false;
-            if (message.Author.IsBot)
-            {
-                return Task.CompletedTask;
-            }
-            if (!e.Channel.IsPrivate)
-            {
+        //    bool serverExists = false;
+        //    if (message.Author.IsBot)
+        //    {
+        //        return Task.CompletedTask;
+        //    }
+        //    if (!e.Channel.IsPrivate)
+        //    {
                  
-                serverExists = true;
-            }
+        //        serverExists = true;
+        //    }
 
 
-            if (message.Content.StartsWith("/"))
-            {
-                var embed = new DiscordEmbedBuilder
-                {
-                    Color = DiscordColor.Yellow,
-                    Title = "Command Recieved",
-                };
-                if (serverExists)
-                {
-                    var server = e.Guild;
-                    embed.AddField(new DiscordEmbedField("Server", server.Name, true));
-                embed.AddField(new DiscordEmbedField("Channel", message.Channel.Name, false));
-                }
-                embed.AddField(new DiscordEmbedField("Created On", message.CreationTimestamp.ToString(), true));
-                embed.AddField(new DiscordEmbedField("Requested By", message.Author.Username, false));
-                embed.AddField(new DiscordEmbedField("Command", message.Content, false));
+        //    if (message.Content.StartsWith("/"))
+        //    {
+        //        var embed = new DiscordEmbedBuilder
+        //        {
+        //            Color = DiscordColor.Yellow,
+        //            Title = "Command Recieved",
+        //        };
+        //        if (serverExists)
+        //        {
+        //            var server = e.Guild;
+        //            embed.AddField(new DiscordEmbedField("Server", server.Name, true));
+        //        embed.AddField(new DiscordEmbedField("Channel", message.Channel.Name, false));
+        //        }
+        //        embed.AddField(new DiscordEmbedField("Created On", message.CreationTimestamp.ToString(), true));
+        //        embed.AddField(new DiscordEmbedField("Requested By", message.Author.Username, false));
+        //        embed.AddField(new DiscordEmbedField("Command", message.Content, false));
 
         
-                    DnDBot.commandChannel.SendMessageAsync(embed: embed);
+        //            DnDBot.commandChannel.SendMessageAsync(embed: embed);
                
-            }
-            else
-            {
-                var embed = new DiscordEmbedBuilder
-                {
-                    Color = DiscordColor.SpringGreen,
-                    Title = "Message Recieved",
-                };
+        //    }
+        //    else
+        //    {
+        //        var embed = new DiscordEmbedBuilder
+        //        {
+        //            Color = DiscordColor.SpringGreen,
+        //            Title = "Message Recieved",
+        //        };
 
-                if (serverExists)
-                {
-                    var server = e.Guild;
-                    embed.AddField(new DiscordEmbedField("Server", server.Name, true));
-                    embed.AddField(new DiscordEmbedField("Channel", message.Channel.Name, false));
-                }
-                embed.AddField(new DiscordEmbedField("Created On", message.CreationTimestamp.ToString(), true));
-                embed.AddField(new DiscordEmbedField("Posted By", message.Author.Username, false));
-                embed.AddField(new DiscordEmbedField("Message", message.Content, false));
-                DnDBot.messageLogChannel.SendMessageAsync(embed: embed);
-
-
-            }
+        //        if (serverExists)
+        //        {
+        //            var server = e.Guild;
+        //            embed.AddField(new DiscordEmbedField("Server", server.Name, true));
+        //            embed.AddField(new DiscordEmbedField("Channel", message.Channel.Name, false));
+        //        }
+        //        embed.AddField(new DiscordEmbedField("Created On", message.CreationTimestamp.ToString(), true));
+        //        embed.AddField(new DiscordEmbedField("Posted By", message.Author.Username, false));
+        //        embed.AddField(new DiscordEmbedField("Message", message.Content, false));
+        //        DnDBot.messageLogChannel.SendMessageAsync(embed: embed);
 
 
-            return Task.CompletedTask;
-        }
+        //    }
+
+
+        //    return Task.CompletedTask;
+        //}
 
 
         [Event]

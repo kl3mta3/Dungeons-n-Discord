@@ -38,15 +38,11 @@ namespace DnDBot
         private string deleteLogName = "dndbot-deleted-log";
 
         public static Config Config { get; internal set; }
-        //start nerw connection data
-
         public static DiscordClient DiscordClient { get; internal set; }
-       // internal static string connStr = $"server={Config.DatabaseConfig.hostname};userid={Config.DatabaseConfig.user};password={Config.DatabaseConfig.password};database={Config.DatabaseConfig.dbName}";
+
         internal static string connStr = "server="+Config.DatabaseConfig.hostname+";userid="+Config.DatabaseConfig.user+";password="+Config.DatabaseConfig.password+";database="+Config.DatabaseConfig.dbName;
         internal static  string tolken = @$"{Config.DiscordConfig.BotToken}";
-       
-      
-        //end new connection data
+
         public static DiscordGuild? homeServer;
         public static DiscordChannel? messagesDeleted;
         public static DiscordChannel? messageLogChannel;
@@ -90,24 +86,7 @@ namespace DnDBot
 
             discord = new DiscordClient(discCofig);
 
-            ///test connector with hidden token
-            //discord = new DiscordClient(new DiscordConfiguration
-            //{
-            //    Token = Config.DiscordConfig.BotToken,
-            //    TokenType = TokenType.Bot,
-            //    AutoReconnect = true,
-            //    MessageCacheSize = 2048,
-            //    MinimumLogLevel = LogLevel.Information,
-            //    Intents = DiscordIntents.AllUnprivileged | DiscordIntents.All,
-            //    UseCanary = true,
-            //    ReconnectIndefinitely = true,
 
-
-            //});
-
-
-
-            ///end test connector
 
             discord.UseInteractivity(new InteractivityConfiguration
             {
@@ -308,7 +287,7 @@ namespace DnDBot
                         newPlayer.playerLevel = 1;
                         newPlayer.xP = 1;
                         newPlayer.cash = 1;
-                        newPlayer.worldPosition = new Vector2(1, 1);
+                        newPlayer.currentPosition = new Vector2(1, 1);
                         newPlayer.name = user.Username;
                        
                         
@@ -337,30 +316,6 @@ namespace DnDBot
             }
             return ;
         }
-
-        
-        public async static Task testUpdateStat()
-        {
-            //MySqlConnection testConn= new MySqlConnection(connStr);
-            //await testConn.OpenAsync();
-
-                Player p = Player.GetPlayerFromDataBase( god.Id);
-
-                  await  p.UpdatePlayerStatInDataBase( god.Id, "baseHealth", 300);
-            await p.UpdatePlayerPosition(p.playerID, new Vector2(1, 1));
-
-            Log.Logger.Information($"update health finished");
-                   // await testConn.CloseAsync();
-
-
-            return ;
-
-        }
-
-
-        
-
-
 
         
     }

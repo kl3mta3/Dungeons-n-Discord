@@ -163,7 +163,7 @@ namespace DnDBot.Character.Commands
                 Player player = Player.GetPlayerFromDataBase(ctx.Member.Id);
                 Console.WriteLine(player.name + "was gotten from database");
                 DiscordMember member = ctx.Member;
-            Vector2 currentLocation = new Vector2(player.worldPosition.X, player.worldPosition.Y);
+            Vector2 currentLocation = new Vector2(player.currentPosition.X, player.currentPosition.Y);
                 
                 WorldGrid newGrid= new WorldGrid();
 
@@ -325,7 +325,7 @@ namespace DnDBot.Character.Commands
 
 
                         }
-                        ctx.Client.Logger.LogInformation($"{player.name} moved {direction} To {player.worldPosition.X}, {player.worldPosition.Y}");
+                        ctx.Client.Logger.LogInformation($"{player.name} moved {direction} To {player.currentPosition.X}, {player.currentPosition.Y}");
                         DiscordWebhookBuilder builder = new DiscordWebhookBuilder();
                         var em = new DiscordEmbedBuilder();
                         em.WithColor(DiscordColor.Blurple);
@@ -430,7 +430,7 @@ namespace DnDBot.Character.Commands
 
 
                         }
-                        ctx.Client.Logger.LogInformation($"{player.name} moved {direction} To {player.worldPosition.X}, {player.worldPosition.Y}");
+                        ctx.Client.Logger.LogInformation($"{player.name} moved {direction} To {player.currentPosition.X}, {player.currentPosition.Y}");
 
                         DiscordWebhookBuilder builder = new DiscordWebhookBuilder();
                         var em = new DiscordEmbedBuilder();
@@ -531,7 +531,7 @@ namespace DnDBot.Character.Commands
 
 
                         }
-                        ctx.Client.Logger.LogInformation($"{player.name} moved {direction} To {player.worldPosition.X}, {player.worldPosition.Y}");
+                        ctx.Client.Logger.LogInformation($"{player.name} moved {direction} To {player.currentPosition.X}, {player.currentPosition.Y}");
                            // await ctx.Member.SendMessageAsync($" {ctx.Member.DisplayName} you moved West!");
 
                                 DiscordWebhookBuilder builder = new DiscordWebhookBuilder();
@@ -635,7 +635,7 @@ namespace DnDBot.Character.Commands
             characterInfoEmbed.AddField(new DiscordEmbedField("Name", player.name, true));
             characterInfoEmbed.AddField(new DiscordEmbedField("Level", player.playerLevel.ToString(), true));
             characterInfoEmbed.AddField(new DiscordEmbedField("Xp", player.xP.ToString(), true));
-            characterInfoEmbed.AddField(new DiscordEmbedField("Current Position", $"Located at Grid({player.worldPosition.X}, {player.worldPosition.Y})", true));
+            characterInfoEmbed.AddField(new DiscordEmbedField("Current Position", $"Located at Grid({player.currentPosition.X}, {player.currentPosition.Y})", true));
             characterInfoEmbed.AddField(new DiscordEmbedField("Cash", player.cash.ToString(), true));
             characterInfoEmbed.AddField(new DiscordEmbedField("Home Guild", player.homeGuildName, true));
             characterInfoEmbed.AddField(new DiscordEmbedField("Player ID", player.playerID.ToString(), false));
@@ -648,7 +648,7 @@ namespace DnDBot.Character.Commands
             characterInfoEmbed.AddField(new DiscordEmbedField("Strength", player.baseStrength.ToString(), false));
             characterInfoEmbed.AddField(new DiscordEmbedField("Intellect", player.baseIntellect.ToString(), true));
             characterInfoEmbed.AddField(new DiscordEmbedField("Agility", player.baseAgility.ToString(), false));
-            characterInfoEmbed.AddField(new DiscordEmbedField("Summary", $"{player.name} of {player.homeGuildName} is currently located at ({player.worldPosition.X}), ({player.worldPosition.Y}), \n is level {player.playerLevel} with {player.xP} Xp currently, \n and has {player.cash} cash in their pocket.", false));
+            characterInfoEmbed.AddField(new DiscordEmbedField("Summary", $"{player.name} of {player.homeGuildName} is currently located at ({player.currentPosition.X}), ({player.currentPosition.Y}), \n is level {player.playerLevel} with {player.xP} Xp currently, \n and has {player.cash} cash in their pocket.", false));
             characterInfoEmbed.Build();
 
             DiscordWebhookBuilder builder = new DiscordWebhookBuilder();
@@ -704,7 +704,7 @@ namespace DnDBot.Character.Commands
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder());
             Player player = Player.GetPlayerFromDataBase(ctx.Member.Id);
-            Vector2 playerPosition = player.worldPosition;
+            Vector2 playerPosition = player.currentPosition;
             WorldGrid northGrid = WorldGrid.GetGridByLocation(new Vector2(playerPosition.X, playerPosition.Y + 1));
             WorldGrid southGrid = WorldGrid.GetGridByLocation(new Vector2(playerPosition.X, playerPosition.Y - 1));
             WorldGrid eastGrid = WorldGrid.GetGridByLocation(new Vector2(playerPosition.X + 1, playerPosition.Y));
