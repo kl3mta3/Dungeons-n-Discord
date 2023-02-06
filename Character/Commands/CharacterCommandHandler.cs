@@ -160,9 +160,9 @@ namespace DnDBot.Character.Commands
 
                 await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder());
                 // Player player = CharacterSystem.GetPlayer(ctx.Member.Id);
-                Player player = Player.GetPlayerFromDataBase(ctx.Member.Id);
-                Console.WriteLine(player.name + "was gotten from database");
-                DiscordMember member = ctx.Member;
+                Player player = Player.GetPlayerFromDataBase(ctx.User.Id);
+
+            DiscordMember member = player.discordMember;
             Vector2 currentLocation = new Vector2(player.currentPosition.X, player.currentPosition.Y);
                 
                 WorldGrid newGrid= new WorldGrid();
@@ -231,7 +231,7 @@ namespace DnDBot.Character.Commands
                             DiscordWebhookBuilder builder = new DiscordWebhookBuilder();
                             var em = new DiscordEmbedBuilder();
                             em.WithColor(DiscordColor.Blurple);
-                            em.WithTitle($"{member.Nickname} {message}");
+                            em.WithTitle($"{ctx.User.Username} {message}");
                             builder.AddEmbed(em);
                             await ctx.EditResponseAsync(builder);
                             return;
@@ -266,7 +266,7 @@ namespace DnDBot.Character.Commands
                             DiscordWebhookBuilder builder = new DiscordWebhookBuilder();
                             var em = new DiscordEmbedBuilder();
                             em.WithColor(DiscordColor.Blurple);
-                            em.WithTitle($"{member.Nickname}, {message}");
+                            em.WithTitle($"{ctx.User.Username}, {message}");
                             //em.WithDescription($"it came up Heads!");
                             builder.AddEmbed(em);
                             await ctx.EditResponseAsync(builder);
@@ -329,7 +329,7 @@ namespace DnDBot.Character.Commands
                         DiscordWebhookBuilder builder = new DiscordWebhookBuilder();
                         var em = new DiscordEmbedBuilder();
                         em.WithColor(DiscordColor.Blurple);
-                        em.WithTitle($"{ctx.Member.DisplayName} {message}");
+                        em.WithTitle($"{ctx.User.Username} {message}");
                         builder.AddEmbed(em);
                         await ctx.EditResponseAsync(builder);
                         return;
@@ -363,7 +363,7 @@ namespace DnDBot.Character.Commands
                         DiscordWebhookBuilder builder = new DiscordWebhookBuilder();
                         var em = new DiscordEmbedBuilder();
                         em.WithColor(DiscordColor.Blurple);
-                        em.WithTitle($"{ctx.Member.DisplayName}, {message}");
+                        em.WithTitle($"{ctx.User.Username}, {message}");
                         //em.WithDescription($"it came up Heads!");
                         builder.AddEmbed(em);
                         await ctx.EditResponseAsync(builder);
@@ -435,7 +435,7 @@ namespace DnDBot.Character.Commands
                         DiscordWebhookBuilder builder = new DiscordWebhookBuilder();
                         var em = new DiscordEmbedBuilder();
                         em.WithColor(DiscordColor.Blurple);
-                        em.WithTitle($"{ctx.Member.DisplayName} {message}");
+                        em.WithTitle($"{ctx.User.Username} {message}");
                         //em.WithDescription($"it came up Heads!");
                         builder.AddEmbed(em);
                         await ctx.EditResponseAsync(builder);
@@ -471,7 +471,7 @@ namespace DnDBot.Character.Commands
                         DiscordWebhookBuilder builder = new DiscordWebhookBuilder();
                         var em = new DiscordEmbedBuilder();
                         em.WithColor(DiscordColor.Blurple);
-                        em.WithTitle($"{ctx.Member.DisplayName}, {message}");
+                        em.WithTitle($"{ctx.User.Username}, {message}");
                         //em.WithDescription($"it came up Heads!");
                         builder.AddEmbed(em);
                         await ctx.EditResponseAsync(builder);
@@ -537,7 +537,7 @@ namespace DnDBot.Character.Commands
                                 DiscordWebhookBuilder builder = new DiscordWebhookBuilder();
                                 var em = new DiscordEmbedBuilder();
                                  em.WithColor(DiscordColor.Blurple);
-                                 em.WithTitle($"{ctx.Member.DisplayName} {message}");
+                                 em.WithTitle($"{ctx.User.Username} {message}");
                                 //em.WithDescription($"it came up Heads!");
                                  builder.AddEmbed(em);
                                 await ctx.EditResponseAsync(builder);
@@ -576,7 +576,7 @@ namespace DnDBot.Character.Commands
                         DiscordWebhookBuilder builder = new DiscordWebhookBuilder();
                         var em = new DiscordEmbedBuilder();
                         em.WithColor(DiscordColor.Blurple);
-                        em.WithTitle($"{ctx.Member.Mention}, {message}");
+                        em.WithTitle($"{ctx.User.Username}, {message}");
                         //em.WithDescription($"it came up Heads!");
                         builder.AddEmbed(em);
                         await ctx.EditResponseAsync(builder);
@@ -630,7 +630,7 @@ namespace DnDBot.Character.Commands
                 Title = $"             Dungeons n Disc",
                 Description = $"      Character Info for {ctx.User.Username}",
         };
-               characterInfoEmbed.WithThumbnail(ctx.Client.CurrentUser.AvatarUrl);
+            characterInfoEmbed.WithThumbnail(ctx.Client.CurrentUser.AvatarUrl,10,10);
 
             characterInfoEmbed.AddField(new DiscordEmbedField("Name", player.name, true));
             characterInfoEmbed.AddField(new DiscordEmbedField("Level", player.playerLevel.ToString(), true));
@@ -660,7 +660,6 @@ namespace DnDBot.Character.Commands
 
         }
 
-
         //[SlashCommand("modals", "A modal!")]
         //public async Task SendModalAsync(InteractionContext ctx)
         //{
@@ -674,8 +673,10 @@ namespace DnDBot.Character.Commands
 
         //    if (res.TimedOut)
         //        return;
+        //    DiscordWebhookBuilder hook = new DiscordWebhookBuilder().WithContent(res.Result.Interaction.Data.Components?.First()?.Value ?? "Nothing was submitted.");
 
-        //    await res.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordWebhookBuilder().WithContent(res.Result.Interaction.Data.Components?.First()?.Value ?? "Nothing was submitted.")) ;
+        //   // await res.Result.Interaction.CreateResponseAsync(hook));
+
         //}
 
         [SlashCommand("pingslash", "Ping Slash Command")]
@@ -703,7 +704,7 @@ namespace DnDBot.Character.Commands
         public async Task ScoutArea(InteractionContext ctx)
         {
             await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource, new DiscordInteractionResponseBuilder());
-            Player player = Player.GetPlayerFromDataBase(ctx.Member.Id);
+            Player player = Player.GetPlayerFromDataBase(ctx.User.Id);
             Vector2 playerPosition = player.currentPosition;
             WorldGrid northGrid = WorldGrid.GetGridByLocation(new Vector2(playerPosition.X, playerPosition.Y + 1));
             WorldGrid southGrid = WorldGrid.GetGridByLocation(new Vector2(playerPosition.X, playerPosition.Y - 1));
@@ -860,12 +861,12 @@ namespace DnDBot.Character.Commands
 
             var em = new DiscordEmbedBuilder
             {
-                Color=DiscordColor.PhthaloGreen,
-                Title=$"------O.O------",
-                Description=$"You take a look Around"
+                Color = DiscordColor.PhthaloGreen,
+                Title = $"------O.O------",
+                Description = $"You take a look Around"
             };
-            
-            em.AddField(new DiscordEmbedField($"{northString}","-^-",false));
+
+            em.AddField(new DiscordEmbedField($"{northString}", "-^-", false));
             em.AddField(new DiscordEmbedField($"{southString}", "-v-", false));
             em.AddField(new DiscordEmbedField($"{eastString}", "->-", false));
             em.AddField(new DiscordEmbedField($"{westString}", "-<-", false));
@@ -876,6 +877,17 @@ namespace DnDBot.Character.Commands
             builder.AddEmbed(em);
             await ctx.EditResponseAsync(builder);
 
+            //DiscordInteractionModalBuilder mobuilder = new DiscordInteractionModalBuilder();
+            //mobuilder.WithCustomId($"------O.O------");
+            //mobuilder.WithTitle($"You take a look Around");
+
+
+            //mobuilder.WithTitle($"-^- {southString}");
+            //mobuilder.WithTitle($"-^- {eastString}");
+            //mobuilder.WithTitle($"-^- {westString}");
+            //mobuilder.WithTitle($"-^- {message}" );
+            //await ctx.CreateModalResponseAsync(mobuilder);
+            
         }
 
 

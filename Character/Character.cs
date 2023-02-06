@@ -283,19 +283,18 @@ namespace DnDBot.Character
         {
              MySqlConnection connection = new MySqlConnection(DnDBot.connStr);
             connection.Open();
-
+            Console.WriteLine("started Get Player From database");
 
             Player player = new Player();
 
-
-            if (connection.State != ConnectionState.Open)
+            try
             {
-                connection.Open();
-            }
-            MySqlCommand cmd = new MySqlCommand("SELECT * FROM players WHERE playerID = @playerID", connection);
-            cmd.Parameters.AddWithValue("@playerID", playerid);
-            MySqlDataReader reader = cmd.ExecuteReader();
-           
+
+
+                MySqlCommand cmd = new MySqlCommand("SELECT * FROM players WHERE playerID = @playerID", connection);
+                cmd.Parameters.AddWithValue("@playerID", playerid);
+                MySqlDataReader reader = cmd.ExecuteReader();
+
                 if (reader.Read())
                 {
                     player.isBanned = reader.GetBoolean("isBanned");
@@ -304,7 +303,7 @@ namespace DnDBot.Character
                     player.name = reader.GetString("name");
                     player.cash = reader.GetInt32("cash");
                     player.xP = reader.GetInt32("xP");
-                    player.playerLevel = reader.GetInt32("playerLevel");        
+                    player.playerLevel = reader.GetInt32("playerLevel");
                     player.homeGuildID = reader.GetUInt64("homeGuildID");
                     player.homeGuildName = reader.GetString("homeGuildName");
                     player.playerID = reader.GetUInt64("playerID");
@@ -319,16 +318,23 @@ namespace DnDBot.Character
                     player.xPToNextLevel = reader.GetInt32("xPToNextLevel");
                     player.maxLevel = reader.GetInt32("maxLevel");
                     player.deaths = reader.GetInt32("deaths");
-                    player.deathPosition.X = reader.GetInt32("deathPosition.X");
-                    player.deathPosition.Y = reader.GetInt32("deathPosition.Y");
+                    player.deathPosition.X = reader.GetInt32("deathPositionX");
+                    player.deathPosition.Y = reader.GetInt32("deathPositionY");
                     player.baseHerbalism = reader.GetInt32("baseHerbalism");
                     player.baseMining = reader.GetInt32("baseMining");
-                player.inventorySize = reader.GetInt32("inventorySize");
-                player.inventoryMax = reader.GetInt32("inventoryMax");
-                player.discordMember = GetDiscordMember(player.homeGuildID, player.playerID);
+                    player.inventorySize = reader.GetInt32("inventorySize");
+                    player.inventoryMax = reader.GetInt32("inventoryMax");
+                    player.discordMember = GetDiscordMember(player.homeGuildID, player.playerID);
                 }
-            connection.Close();
-            return player;
+                connection.Close();
+                return player;
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex.Message);
+                return null;
+
+            }
         }
 
 
@@ -351,15 +357,15 @@ namespace DnDBot.Character
 
             try
             {
-                Player player = GetPlayerFromDataBase(playerId);
+                //Player player = GetPlayerFromDataBase(playerId);
             
-                int _playerStat = player.UpdateStatValueByName(playerStat, newValue);
+                int _playerStat = UpdateStatValueByName(playerStat, newValue);
 
                 var var1 = playerId;
                 var var2 = _playerStat;
                 var var3 = playerStat;
                 string query = $"UPDATE players SET {playerStat} =@playerStat WHERE playerID =@playerID ";
-                //string query1 = "UPDATE players SET baseHealth =150 WHERE playerID =179578819672408064 ";
+                
             
                 MySqlCommand command = new MySqlCommand(query, connT);
                 command.Parameters.AddWithValue("@playerID", var1);
