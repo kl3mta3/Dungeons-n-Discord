@@ -529,7 +529,7 @@ namespace DnDBot.Items
             itemName = _itemName;
         }
 
-
+       
         public InventoryItem GetInventoryItemFromDB(ulong playerID, ulong itemID)
         {
 
